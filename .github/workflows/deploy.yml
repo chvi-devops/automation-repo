@@ -51,7 +51,7 @@ jobs:
       new_repo_description: ${{ needs.ingest_input.outputs.new_repo_description }}
       new_repo_tfvars_file: ${{ needs.ingest_input.outputs.new_repo_tfvars_file }}
       network_spoke_module: ${{ needs.ingest_input.outputs.network_spoke_module }}
-      private_endpoint_module: ${{ needs.ingest_inputs.outputs.private_endpoint_module }}
+      private_endpoint_module: ${{ needs.ingest_input.outputs.private_endpoint_module }}
       tfc_workspace_name: ${{ needs.ingest_input.outputs.tfc_workspace_name }}
       tfc_workspace_tags: ${{ needs.ingest_input.outputs.tfc_workspace_tags }}
       tfc_workspace_var_set_name: ${{ needs.ingest_input.outputs.tfc_workspace_var_set_name }}
@@ -105,7 +105,7 @@ jobs:
       new_repo_name: ${{ needs.ingest_input.outputs.new_repo_name }}
       new_repo_tfvars_file: ${{ needs.ingest_input.outputs.new_repo_tfvars_file }}
       network_spoke_module: ${{ needs.ingest_input.outputs.network_spoke_module }}
-      private_endpoint_module: ${{ needs.ingest_inputs.outputs.private_endpoint_module }}
+      private_endpoint_module: ${{ needs.ingest_input.outputs.private_endpoint_module }}
     steps: 
     - name: Checkout code
       uses: actions/checkout@v3
