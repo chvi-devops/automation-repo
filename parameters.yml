@@ -1,7 +1,8 @@
-new_repo_name: demo-repo-01
-new_repo_description: for demo purpose 01
+new_repo_name: demo-repo-02
+new_repo_description: for demo purpose 02
 new_repo_tfvars_file: ["dev", "test"]
 network_spoke_module: true
+private_endpoint_module: true
 tfc_workspace_name: workspace-demo-repo
 tfc_workspace_tags: ["tag1"]
 tfc_workspace_var_set_name: Environment Variables 1

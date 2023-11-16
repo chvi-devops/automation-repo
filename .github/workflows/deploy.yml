@@ -22,6 +22,7 @@ jobs:
       new_repo_description: ${{ steps.ingest_inputs.outputs.new_repo_description }}
       new_repo_tfvars_file: ${{ steps.ingest_inputs.outputs.new_repo_tfvars_file }}
       network_spoke_module: ${{ steps.ingest_inputs.outputs.network_spoke_module }}
+      private_endpoint_module: ${{ steps.ingest_inputs.outputs.private_endpoint_module }}
       tfc_workspace_name: ${{ steps.ingest_inputs.outputs.tfc_workspace_name }}
       tfc_workspace_tags: ${{ steps.ingest_inputs.outputs.tfc_workspace_tags }}
       tfc_workspace_var_set_name: ${{ steps.ingest_inputs.outputs.tfc_workspace_var_set_name }}
@@ -50,6 +51,7 @@ jobs:
       new_repo_description: ${{ needs.ingest_input.outputs.new_repo_description }}
       new_repo_tfvars_file: ${{ needs.ingest_input.outputs.new_repo_tfvars_file }}
       network_spoke_module: ${{ needs.ingest_input.outputs.network_spoke_module }}
+      private_endpoint_module: ${{ needs.ingest_inputs.outputs.private_endpoint_module }}
       tfc_workspace_name: ${{ needs.ingest_input.outputs.tfc_workspace_name }}
       tfc_workspace_tags: ${{ needs.ingest_input.outputs.tfc_workspace_tags }}
       tfc_workspace_var_set_name: ${{ needs.ingest_input.outputs.tfc_workspace_var_set_name }}
@@ -61,8 +63,8 @@ jobs:
         run: |
           echo "New Repo Name = $new_repo_name"
           echo "New Repo Description = $new_repo_description"
-          echo "Network spoke module = $new_repo_tfvars_file"
-          echo "New Repo Description = $network_spoke_module"
+          echo "Network spoke module = $network_spoke_module"
+          echo "Private endpoint module = $private_endpoint_module"
           echo "TFC Workspace Name = $tfc_workspace_name"
           echo "TFC Workspace Tags = $tfc_workspace_tags"
           echo "TFC Workspace Variable Set Name = $tfc_workspace_var_set_name"
@@ -103,6 +105,7 @@ jobs:
       new_repo_name: ${{ needs.ingest_input.outputs.new_repo_name }}
       new_repo_tfvars_file: ${{ needs.ingest_input.outputs.new_repo_tfvars_file }}
       network_spoke_module: ${{ needs.ingest_input.outputs.network_spoke_module }}
+      private_endpoint_module: ${{ needs.ingest_inputs.outputs.private_endpoint_module }}
     steps: 
     - name: Checkout code
       uses: actions/checkout@v3
@@ -167,6 +170,12 @@ jobs:
           cd ${{ github.workspace }}/$new_repo_name
           echo "$module_content" >> main.tf
         fi
+
+        if [[ $private_endpoint_module == 'true' ]]; then
+          module_content=$(cat "${{ github.workspace }}/modules/private-endpoint.tf")
+          cd ${{ github.workspace }}/$new_repo_name
+          echo "$module_content" >> main.tf
+        fi          
 
         tfvars_count=$(yq eval '.new_repo_tfvars_file | length' ${{ github.workspace }}/parameters.yml)
 
