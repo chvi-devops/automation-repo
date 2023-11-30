@@ -12,6 +12,7 @@ env:
   template_repo_name: template-repo
   workspace_repo_name: workspace-repo
   GH_TOKEN: ${{ secrets.GH_PAT }}
+  TEST_VALUE: test-value
 
 jobs:
   ingest_input:
@@ -72,13 +73,11 @@ jobs:
 
       - name: Make the environment variable
         run: |
-          echo "TEST_VALUE=$new_repo_name" >> "$GITHUB_ENV"
+          echo "::add-mask::$TEST_VALUE"
+          echo "secret_value=$the_secret" >> "$GITHUB_ENV"
 
       - name: Print the environment variable
         run: |
-          the_secret=$TEST_VALUE
-          echo "::add-mask::$the_secret"
-          echo "secret_value=$the_secret" >> "$GITHUB_ENV"
           echo "the secret number is $secret_value"
 
   create_repo:
