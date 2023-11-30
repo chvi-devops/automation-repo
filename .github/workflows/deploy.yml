@@ -72,7 +72,7 @@ jobs:
 
       - name: Make the environment variable
         run: |
-          echo "TEST_VALUE=test-value" >> "$GITHUB_ENV"
+          echo "TEST_VALUE=$new_repo_name" >> "$GITHUB_ENV"
 
       - name: Print the environment variable
         run: |
