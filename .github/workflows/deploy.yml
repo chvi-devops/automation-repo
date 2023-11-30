@@ -85,7 +85,7 @@ jobs:
     - name: Check if Repository Already Exists and Stop Workflow If Repository Exist
       run: |
         if gh api repos/$org_name/$new_repo_name --silent 2>/dev/null; then
-          echo "Repository $org_name/$new_repo_name exists."
+          echo "Repository $org_name/$new_repo_name exists with this name."
           exit 1
         else
           echo "Repository $org_name/$new_repo_name does not exist."
