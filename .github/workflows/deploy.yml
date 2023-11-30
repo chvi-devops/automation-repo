@@ -12,6 +12,7 @@ env:
   template_repo_name: template-repo
   workspace_repo_name: workspace-repo
   GH_TOKEN: ${{ secrets.GH_PAT }}
+  TEST_VALUE: test-value
 
 jobs:
   ingest_input:
@@ -69,6 +70,15 @@ jobs:
           echo "TFC Workspace Tags = $tfc_workspace_tags"
           echo "TFC Workspace Variable Set Name = $tfc_workspace_var_set_name"
           echo "TFC Workspace Project Name = $tfc_workspace_project_name"
+
+      - name: Make the environment variable
+        run: |
+          echo "::add-mask::$TEST_VALUE"
+          echo "secret_value=$the_secret" >> "$GITHUB_ENV"
+
+      - name: Print the environment variable
+        run: |
+          echo "the secret number is $secret_value"
 
   create_repo:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
