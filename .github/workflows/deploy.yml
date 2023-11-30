@@ -72,8 +72,7 @@ jobs:
 
       - name: Make the environment variable
         run: |
-          echo "TEST_VALUE=test-value" >> "$GITHUB_ENV"
-          the_secret=$TEST_VALUE
+          the_secret=$new_repo_name
           echo "::add-mask::$the_secret"
           echo "secret_value=$the_secret" >> "$GITHUB_ENV"
           echo "the secret number is $secret_value"
