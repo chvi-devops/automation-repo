@@ -76,11 +76,11 @@ jobs:
         run: |
           the_secret=$TEST_VALUE
           echo "::add-mask::$the_secret"
-          echo "secret-value=$the_secret" >> "$GITHUB_ENV"
+          echo "secret_value=$the_secret" >> "$GITHUB_ENV"
 
       - name: Use that secret (protected by a mask)
         run: |
-          echo "the secret number is $secret-value"
+          echo "the secret number is $secret_value"
 
   create_repo:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
