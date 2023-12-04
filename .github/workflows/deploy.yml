@@ -177,11 +177,10 @@ jobs:
 
         git add .
 
-        current_sha=$(git rev-parse HEAD)
-        echo $current_sha
-
         if [[ $(git status --porcelain) ]]; then
           git commit -m "Updated files"
+          current_sha=$(git rev-parse HEAD)
+          echo $current_sha
           curl -X POST "https://api.github.com/$org_name/$new_repo_name/repository/git/refs" \
           -H "Authorization: token $GH_TOKEN" \
           -H "Content-Type: application/json" \
