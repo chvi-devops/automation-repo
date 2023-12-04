@@ -34,7 +34,7 @@ jobs:
           value="$(echo "$line" | cut -d ':' -f 2- | sed 's/^ *//g')"
           echo "$name=$value" >> "$GITHUB_OUTPUT"
           done < parameters.yml
-          
+
   create_repo:
     needs: ingest_input
     name: "Deploy New Repositories"
@@ -137,73 +137,57 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v3
-
-    - name: Clone New repo
-      env:
-        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
-      run: 
-        gh repo clone $org_name/$new_repo_name
     
-    - name: Manupilate main.tf file
-      id: main_tf
-      env:
-        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
-      run: |
-          cd ${{ github.workspace }}/$new_repo_name
-          git checkout development
-
-          response=$(gh api /repos/$org_name/$new_repo_name/contents/main.tf?ref=development)
-          echo "sha=$(echo "$response" | jq -r '.sha')" >> "$GITHUB_OUTPUT"
-
-          if [[ $network_spoke_module == 'true' ]]; then
-            module_content=$(cat "${{ github.workspace }}/modules/network-spoke.tf")
-            echo "$module_content" >> main.tf
-          fi
-
-          echo "encoded_content=$(cat main.tf | base64 | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
-
     - name: Configure repo
-      id: config
       env:
         GH_TOKEN: ${{ steps.generate_token.outputs.token }}
       run: |
-        cd ${{ github.workspace }}/$new_repo_name
-        git checkout development
+        team_slug_name=$(echo "$team_name" | tr '[:upper:]' '[:lower:]')
 
-        curl -L \
-          -X PUT \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer $GH_TOKEN" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/$org_name/$new_repo_name/contents/main.tf -d '{
-            "message":"Main file changed",
-            "committer":{"name":"Demo user","email":"DemoUser@github.com"},
-            "branch":"development",
-            "sha": "${{ steps.get_sha.outputs.sha }}",
-            "content":"${{ steps.get_sha.outputs.encode }}"
-          }'
+        gh repo clone $org_name/$new_repo_name
+        cd ${{ github.workspace }}/$new_repo_name
+        git config --global user.email "svc-middlewareGW@na.hasbro.com"
+        git config --global user.name "svc-middlewareGW_hasbro"
+        git checkout development
+        git branch feat-config
+        git checkout feat-config
+
+        if [[ $network_spoke_module == 'true' ]]; then
+          module_content=$(cat "${{ github.workspace }}/modules/network-spoke.tf")
+          cd ${{ github.workspace }}/$new_repo_name
+          echo "$module_content" >> main.tf
+        fi
+
+        if [[ $private_endpoint_module == 'true' ]]; then
+          module_content=$(cat "${{ github.workspace }}/modules/private-endpoint.tf")
+          cd ${{ github.workspace }}/$new_repo_name
+          echo "$module_content" >> main.tf
+        fi     
 
         tfvars_count=$(yq eval '.new_repo_tfvars_file | length' ${{ github.workspace }}/parameters.yml)
 
         if [[ $tfvars_count > 0 ]]; then
           count=$tfvars_count
-          while [[ $count -gt 0 ]]; do 
+          while [[ $count -gt 0 ]]; do
             count=$((count-1))
             file_name=$(yq eval '.new_repo_tfvars_file['$count']' ${{ github.workspace }}/parameters.yml)
             cp ${{ github.workspace }}/tfvars/$file_name.tfvars ${{ github.workspace }}/$new_repo_name
-            echo $file_name
-            encoded_content=$(cat $file_name.tfvars | base64 | tr -d '[:space:]')
-            echo $encoded_content
-            curl -L \
-              -X PUT \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer $GH_TOKEN" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              https://api.github.com/repos/$org_name/$new_repo_name/contents/$file_name.tfvars -d '{
-                "message":"tfvars file added",
-                "committer":{"name":"Demo user","email":"DemoUser@github.com"},
-                "branch":"development",
-                "content":"$encoded_content"
-              }'
           done
+        fi
+
+        git add .
+
+        current_sha=$(git rev-parse HEAD)
+        echo $current_sha
+
+        if [[ $(git status --porcelain) ]]; then
+          git commit -m "Updated files"
+          curl -X POST "https://api.github.com/$org_name/$new_repo_name/repository/git/refs" \
+          -H "Authorization: token $GH_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "ref": "refs/heads/feat-config",
+            "sha": $current_sha
+          }'
+          # gh pr create --base development --head feat-config --fill --reviewer $org_name/$team_slug_name
         fi
