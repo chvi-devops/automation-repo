@@ -186,7 +186,7 @@ jobs:
           -H "Content-Type: application/json" \
           -d '{
             "ref": "refs/heads/feat-config",
-            "sha": $current_sha
+            "sha": "$current_sha"
           }'
           # gh pr create --base development --head feat-config --fill --reviewer $org_name/$team_slug_name
         fi
