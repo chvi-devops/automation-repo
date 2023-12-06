@@ -141,18 +141,13 @@ jobs:
       uses: actions/checkout@v3
     
     - name: Configure repo
-      env:
-        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
       run: |
         team_slug_name=$(echo "$team_name" | tr '[:upper:]' '[:lower:]')
 
-        gh repo clone $org_name/$new_repo_name
+        git clone https://$GH_TOKEN@github.com/$org_name/$new_repo_name.git
         cd ${{ github.workspace }}/$new_repo_name
-        git config --global user.email "svc-middlewareGW@na.hasbro.com"
-        git config --global user.name "svc-middlewareGW_hasbro"
-        git checkout development
-        git branch feat-config
-        git checkout feat-config
+        git config --global user.email "svc@gamil.com"
+        git config --global user.name "svc"
 
         if [[ $network_spoke_module == 'true' ]]; then
           module_content=$(cat "${{ github.workspace }}/modules/network-spoke.tf")
@@ -180,15 +175,9 @@ jobs:
         git add .
 
         if [[ $(git status --porcelain) ]]; then
-          git commit -m "Updated files"
-          current_sha=$(git rev-parse HEAD)
-          echo $current_sha
-          curl -X POST "https://api.github.com/$org_name/$new_repo_name/repository/git/refs" \
-          -H "Authorization: token $GH_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "ref": "refs/heads/feat-config",
-            "sha": "$current_sha"
-          }'
-          # gh pr create --base development --head feat-config --fill --reviewer $org_name/$team_slug_name
+          git commit -m "Initial files added"
+          git push origin main
+          git checkout development
+          git commit -m "Initial files added"
+          git push origin development
         fi
