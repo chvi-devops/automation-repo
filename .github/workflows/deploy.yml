@@ -112,7 +112,11 @@ jobs:
               "require_code_owner_reviews": false,
               "required_approving_review_count": 1
             },
-            "restrictions": null,
+            "restrictions": {
+              "users": [],
+              "teams": [],
+              "apps": []
+            },
             "bypass branch protections": false,
             "required_linear_history": false,
             "allow_force_pushes": false,
@@ -129,7 +133,11 @@ jobs:
               "require_code_owner_reviews": false,
               "required_approving_review_count": 1
             },
-            "restrictions": null,
+            "restrictions": {
+              "users": [],
+              "teams": [],
+              "apps": []
+            },
             "required_linear_history": false,
             "bypass branch protections": false,
             "allow_force_pushes": false,
