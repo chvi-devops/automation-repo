@@ -97,45 +97,6 @@ jobs:
         team_slug_name=$(echo "$team_name" | tr '[:upper:]' '[:lower:]')
         gh api --method PUT \
           /orgs/$org_name/teams/$team_slug_name/repos/$org_name/$new_repo_name -f permission='triage' 
-    
-    - name: Configure Branch Protection
-      env:
-        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
-      run: |
-        # Enable branch protection for Main branch
-        curl -X PUT -H "Authorization: token $GH_TOKEN" \
-          "https://api.github.com/repos/$org_name/$new_repo_name/branches/main/protection" -d '{
-            "required_status_checks": null,
-            "enforce_admins": true,
-            "required_pull_request_reviews": {
-              "dismiss_stale_reviews": false,
-              "require_code_owner_reviews": false,
-              "required_approving_review_count": 1
-            },
-            "restrictions": null,
-            "bypass branch protections": false,
-            "required_linear_history": false,
-            "allow_force_pushes": false,
-            "allow_deletions": false
-          }'
-        
-        # Enable branch protection for Development branch
-        curl -X PUT -H "Authorization: token $GH_TOKEN" \
-          "https://api.github.com/repos/$org_name/$new_repo_name/branches/development/protection" -d '{
-            "required_status_checks": null,
-            "enforce_admins": true,
-            "required_pull_request_reviews": {
-              "dismiss_stale_reviews": false,
-              "require_code_owner_reviews": false,
-              "required_approving_review_count": 1
-            },
-            "restrictions": null,
-            "required_linear_history": false,
-            "bypass branch protections": false,
-            "allow_force_pushes": false,
-            "allow_deletions": false
-          }'
-      shell: bash
 
     - name: Checkout code
       uses: actions/checkout@v3
@@ -181,3 +142,42 @@ jobs:
           git commit -m "Initial files added"
           git push origin development
         fi
+        
+    - name: Configure Branch Protection
+      env:
+        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+      run: |
+        # Enable branch protection for Main branch
+        curl -X PUT -H "Authorization: token $GH_TOKEN" \
+          "https://api.github.com/repos/$org_name/$new_repo_name/branches/main/protection" -d '{
+            "required_status_checks": null,
+            "enforce_admins": true,
+            "required_pull_request_reviews": {
+              "dismiss_stale_reviews": false,
+              "require_code_owner_reviews": false,
+              "required_approving_review_count": 1
+            },
+            "restrictions": null,
+            "bypass branch protections": false,
+            "required_linear_history": false,
+            "allow_force_pushes": false,
+            "allow_deletions": false
+          }'
+        
+        # Enable branch protection for Development branch
+        curl -X PUT -H "Authorization: token $GH_TOKEN" \
+          "https://api.github.com/repos/$org_name/$new_repo_name/branches/development/protection" -d '{
+            "required_status_checks": null,
+            "enforce_admins": true,
+            "required_pull_request_reviews": {
+              "dismiss_stale_reviews": false,
+              "require_code_owner_reviews": false,
+              "required_approving_review_count": 1
+            },
+            "restrictions": null,
+            "required_linear_history": false,
+            "bypass branch protections": false,
+            "allow_force_pushes": false,
+            "allow_deletions": false
+          }'
+      shell: bash
