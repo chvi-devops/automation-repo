@@ -113,6 +113,7 @@ jobs:
               "required_approving_review_count": 1
             },
             "restrictions": null,
+            "bypass_branch_protections": false,
             "required_linear_history": false,
             "allow_force_pushes": false,
             "allow_deletions": false
@@ -130,6 +131,7 @@ jobs:
             },
             "restrictions": null,
             "required_linear_history": false,
+            "bypass_branch_protections": false,
             "allow_force_pushes": false,
             "allow_deletions": false
           }'
