@@ -18,5 +18,5 @@ tfc_workspace_execution_mode: remote
 # ========================================= #####
 # Future Implemetation Features
 #
-# tfc_new_projects: ["example1", "example2"]
-# tfc_new_var_sets: ["New Variable Set 1", "New Variable Set 2"]
+tfc_new_projects: example1
+tfc_new_var_sets: New Variable Set 1
