@@ -183,7 +183,7 @@ jobs:
   #     shell: bash
 
   create_workspace:
-    # needs: [ ingest_inputs, create_repo ]
+    needs: [ ingest_inputs ]
     name: "Create New TFC Workspace"
     runs-on: ubuntu-latest
     env:
@@ -202,8 +202,8 @@ jobs:
       run: |
         git clone https://$GH_TOKEN@github.com/$org_name/$workspace_repo_name.git
         cd ${{ github.workspace }}/$workspace_repo_name
-        git config --global user.email "svc-middlewareGW@na.hasbro.com"
-        git config --global user.name "svc-middlewareGW_hasbro"
+        git config --global user.email "svc@gmail.com"
+        git config --global user.name "svc"
         git checkout development
         git branch feat-$tfc_workspace_name-workspace
         git checkout feat-$tfc_workspace_name-workspace
