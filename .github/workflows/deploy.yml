@@ -232,16 +232,17 @@ jobs:
         terraform fmt --recursive
       shell: bash
 
-    - name: Update Unique Variable Sets
+    - name: Update workspace.tfvars with new entries
       run: |
         cd ${{ github.workspace }}/$workspace_repo_name
-        sed -i '/^unique_var_sets *= *\[/{s/\[\(.*\)\]/[\1,\n  "'"$tfc_new_var_sets"'" \]/;}' workspaces.tfvars
-      shell: bash
 
-    - name: Update Unique Projects
-      run: |
-        cd ${{ github.workspace }}/$workspace_repo_name
-        sed -i '/^unique_projects *= *\[/{s/\[\(.*\)\]/[\1,\n  "'"$tfc_new_projects"'" \]/;}' workspaces.tfvars
+        # Add new variable set name to unique_var_sets
+        sed -i "/unique_var_sets = \[/a \ \ \"$tfc_workspace_var_set_name\"" workspaces.tfvars
+
+        # Add new project name to unique_projects
+        sed -i "/unique_projects = \[/a \ \ \"$tfc_workspace_project_name\"" workspaces.tfvars
+
+        terraform fmt --recursive
       shell: bash
     
     - name:  Create pull request from feature branch to development branch
