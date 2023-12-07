@@ -35,149 +35,213 @@ jobs:
           echo "$name=$value" >> "$GITHUB_OUTPUT"
           done < parameters.yml
 
-  create_repo:
-    needs: ingest_input
-    name: "Deploy New Repositories"
-    runs-on: ubuntu-latest
-    env:
-      new_repo_name: ${{ needs.ingest_input.outputs.new_repo_name }}
-      new_repo_description: ${{ needs.ingest_input.outputs.new_repo_description }}
-    steps:
-    - name: Generate a token
-      uses: actions/create-github-app-token@v1
-      id: generate_token
-      with:
-        app-id: ${{ secrets.APP_ID }}
-        private-key: ${{ secrets.APP_PRIVATE_KEY }}
-        owner: ${{ github.repository_owner }}
+  # create_repo:
+  #   needs: ingest_input
+  #   name: "Deploy New Repositories"
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     new_repo_name: ${{ needs.ingest_input.outputs.new_repo_name }}
+  #     new_repo_description: ${{ needs.ingest_input.outputs.new_repo_description }}
+  #   steps:
+  #   - name: Generate a token
+  #     uses: actions/create-github-app-token@v1
+  #     id: generate_token
+  #     with:
+  #       app-id: ${{ secrets.APP_ID }}
+  #       private-key: ${{ secrets.APP_PRIVATE_KEY }}
+  #       owner: ${{ github.repository_owner }}
 
-    - name: Check if Repository Already Exists and Stop Workflow If Repository Exist
-      env:
-        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
-      run: |
-        if gh api repos/$org_name/$new_repo_name --silent 2>/dev/null; then
-          echo "Repository $org_name/$new_repo_name exists."
-          exit 1
-        else
-          echo "Repository $org_name/$new_repo_name does not exist."
-        fi
-      shell: bash
+  #   - name: Check if Repository Already Exists and Stop Workflow If Repository Exist
+  #     env:
+  #       GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+  #     run: |
+  #       if gh api repos/$org_name/$new_repo_name --silent 2>/dev/null; then
+  #         echo "Repository $org_name/$new_repo_name exists."
+  #         exit 1
+  #       else
+  #         echo "Repository $org_name/$new_repo_name does not exist."
+  #       fi
+  #     shell: bash
 
-    - name: Checkout code
-      uses: actions/checkout@v3
+  #   - name: Checkout code
+  #     uses: actions/checkout@v3
 
-    - name: Create Repository
-      env:
-        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
-      run: |
-        gh repo create $org_name/$new_repo_name --public --description "$new_repo_description" \
-          --include-all-branches --template=$org_name/$template_repo_name
+  #   - name: Create Repository
+  #     env:
+  #       GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+  #     run: |
+  #       gh repo create $org_name/$new_repo_name --public --description "$new_repo_description" \
+  #         --include-all-branches --template=$org_name/$template_repo_name
 
-  configure-new-repo:
-    needs: [ ingest_input, create_repo ]
-    name: "Configure New Repository"
-    runs-on: ubuntu-latest
-    env:
-      new_repo_name: ${{ needs.ingest_input.outputs.new_repo_name }}
-      new_repo_tfvars_file: ${{ needs.ingest_input.outputs.new_repo_tfvars_file }}
-      network_spoke_module: ${{ needs.ingest_input.outputs.network_spoke_module }}
-    steps: 
-    - name: Generate a token
-      uses: actions/create-github-app-token@v1
-      id: generate_token
-      with:
-        app-id: ${{ secrets.APP_ID }}
-        private-key: ${{ secrets.APP_PRIVATE_KEY }}
-        owner: ${{ github.repository_owner }}
+  # configure-new-repo:
+  #   needs: [ ingest_input, create_repo ]
+  #   name: "Configure New Repository"
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     new_repo_name: ${{ needs.ingest_input.outputs.new_repo_name }}
+  #     new_repo_tfvars_file: ${{ needs.ingest_input.outputs.new_repo_tfvars_file }}
+  #     network_spoke_module: ${{ needs.ingest_input.outputs.network_spoke_module }}
+  #   steps: 
+  #   - name: Generate a token
+  #     uses: actions/create-github-app-token@v1
+  #     id: generate_token
+  #     with:
+  #       app-id: ${{ secrets.APP_ID }}
+  #       private-key: ${{ secrets.APP_PRIVATE_KEY }}
+  #       owner: ${{ github.repository_owner }}
       
-    - name: Add Team as a Reviewer Team
-      env:
-        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
-      run: |
-        team_slug_name=$(echo "$team_name" | tr '[:upper:]' '[:lower:]')
-        gh api --method PUT \
-          /orgs/$org_name/teams/$team_slug_name/repos/$org_name/$new_repo_name -f permission='triage' 
+  #   - name: Add Team as a Reviewer Team
+  #     env:
+  #       GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+  #     run: |
+  #       team_slug_name=$(echo "$team_name" | tr '[:upper:]' '[:lower:]')
+  #       gh api --method PUT \
+  #         /orgs/$org_name/teams/$team_slug_name/repos/$org_name/$new_repo_name -f permission='triage' 
 
+  #   - name: Checkout code
+  #     uses: actions/checkout@v3
+    
+  #   - name: Configure repo
+  #     run: |
+  #       team_slug_name=$(echo "$team_name" | tr '[:upper:]' '[:lower:]')
+
+  #       git clone https://$GH_TOKEN@github.com/$org_name/$new_repo_name.git
+  #       cd ${{ github.workspace }}/$new_repo_name
+  #       git config --global user.email "svc@gamil.com"
+  #       git config --global user.name "svc"
+
+  #       if [[ $network_spoke_module == 'true' ]]; then
+  #         module_content=$(cat "${{ github.workspace }}/modules/network-spoke.tf")
+  #         cd ${{ github.workspace }}/$new_repo_name
+  #         echo "$module_content" >> main.tf
+  #       fi
+
+  #       if [[ $private_endpoint_module == 'true' ]]; then
+  #         module_content=$(cat "${{ github.workspace }}/modules/private-endpoint.tf")
+  #         cd ${{ github.workspace }}/$new_repo_name
+  #         echo "$module_content" >> main.tf
+  #       fi     
+
+  #       tfvars_count=$(yq eval '.new_repo_tfvars_file | length' ${{ github.workspace }}/parameters.yml)
+
+  #       if [[ $tfvars_count > 0 ]]; then
+  #         count=$tfvars_count
+  #         while [[ $count -gt 0 ]]; do
+  #           count=$((count-1))
+  #           file_name=$(yq eval '.new_repo_tfvars_file['$count']' ${{ github.workspace }}/parameters.yml)
+  #           cp ${{ github.workspace }}/tfvars/$file_name.tfvars ${{ github.workspace }}/$new_repo_name
+  #         done
+  #       fi
+
+  #       git add .
+
+  #       if [[ $(git status --porcelain) ]]; then
+  #         git commit -m "Initial files added"
+  #         git push origin main
+  #         git checkout development
+  #         git commit -m "Initial files added"
+  #         git push origin development
+  #       fi
+        
+  #   - name: Configure Branch Protection
+  #     env:
+  #       GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+  #     run: |
+  #       # Enable branch protection for Main branch
+  #       curl -X PUT -H "Authorization: token $GH_TOKEN" \
+  #         "https://api.github.com/repos/$org_name/$new_repo_name/branches/main/protection" -d '{
+  #           "required_status_checks": null,
+  #           "enforce_admins": true,
+  #           "required_pull_request_reviews": {
+  #             "dismiss_stale_reviews": false,
+  #             "require_code_owner_reviews": false,
+  #             "required_approving_review_count": 1
+  #           },
+  #           "restrictions": null,
+  #           "bypass branch protections": false,
+  #           "required_linear_history": false,
+  #           "allow_force_pushes": false,
+  #           "allow_deletions": false
+  #         }'
+        
+  #       # Enable branch protection for Development branch
+  #       curl -X PUT -H "Authorization: token $GH_TOKEN" \
+  #         "https://api.github.com/repos/$org_name/$new_repo_name/branches/development/protection" -d '{
+  #           "required_status_checks": null,
+  #           "enforce_admins": true,
+  #           "required_pull_request_reviews": {
+  #             "dismiss_stale_reviews": false,
+  #             "require_code_owner_reviews": false,
+  #             "required_approving_review_count": 1
+  #           },
+  #           "restrictions": null,
+  #           "required_linear_history": false,
+  #           "bypass branch protections": false,
+  #           "allow_force_pushes": false,
+  #           "allow_deletions": false
+  #         }'
+  #     shell: bash
+
+  create_workspace:
+    needs: [ ingest_inputs, create_repo ]
+    name: "Create New TFC Workspace"
+    runs-on: ubuntu-latest
+    env:
+      tfc_workspace_name: ${{ needs.ingest_inputs.outputs.tfc_workspace_name }}
+      tfc_workspace_tags: ${{ needs.ingest_inputs.outputs.tfc_workspace_tags }}
+      tfc_workspace_execution_mode: ${{ needs.ingest_inputs.outputs.tfc_workspace_execution_mode }}
+      tfc_workspace_var_set_name: ${{ needs.ingest_inputs.outputs.tfc_workspace_var_set_name }}
+      tfc_workspace_project_name: ${{ needs.ingest_inputs.outputs.tfc_workspace_project_name }}
+      tfc_new_projects: ${{ needs.ingest_inputs.outputs.tfc_new_projects }}
+      tfc_new_var_sets: ${{ needs.ingest_inputs.outputs.tfc_new_var_sets }}
+    steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
+    - name: Clone the worskspace repo
+      run: |
+        git clone https://$GH_TOKEN@github.com/$org_name/$workspace_repo_name.git
+        cd ${{ github.workspace }}/$workspace_repo_name
+        git config --global user.email "svc-middlewareGW@na.hasbro.com"
+        git config --global user.name "svc-middlewareGW_hasbro"
+        git checkout development
+        git branch feat-$tfc_workspace_name-workspace
+        git checkout feat-$tfc_workspace_name-workspace
+      
+    - name: Manipulate and Update Workspace Object
+      run: |
+        sed -i "s|sample_workspace|$tfc_workspace_name|g" ${{ github.workspace }}/template-workspaces.tfvars
+        sed -i "s|sample_variable_set|$tfc_workspace_var_set_name|g" ${{ github.workspace }}/template-workspaces.tfvars
+        sed -i "s|sample_execution_mode|$tfc_workspace_execution_mode|g" ${{ github.workspace }}/template-workspaces.tfvars
+        sed -i "s|sample_project_name|$tfc_workspace_project_name|g" ${{ github.workspace }}/template-workspaces.tfvars
+        sed -i "s|sample_tags|$tfc_workspace_tags|g" ${{ github.workspace }}/template-workspaces.tfvars
+
+        updated_object=$(cat "${{ github.workspace }}/template-workspaces.tfvars")
+        cd ${{ github.workspace }}/$workspace_repo_name
+        
+        sed -i '$ s|}||' workspaces.tfvars
+        echo "$updated_object" >> workspaces.tfvars
+        echo "}" >> workspaces.tfvars
+        terraform fmt --recursive
+      shell: bash
+
+    - name: Update Unique Variable Sets
+      run: |
+        cd ${{ github.workspace }}/$workspace_repo_name
+        sed -i '/^unique_var_sets *= *\[/{s/\[\(.*\)\]/[\1,\n  "'"$tfc_new_var_sets"'" \]/;}' workspaces.tfvars
+      shell: bash
+
+    - name: Update Unique Projects
+      run: |
+        cd ${{ github.workspace }}/$workspace_repo_name
+        sed -i '/^unique_projects *= *\[/{s/\[\(.*\)\]/[\1,\n  "'"$tfc_new_projects"'" \]/;}' workspaces.tfvars
+      shell: bash
     
-    - name: Configure repo
+    - name:  Create pull request from feature branch to development branch
       run: |
         team_slug_name=$(echo "$team_name" | tr '[:upper:]' '[:lower:]')
 
-        git clone https://$GH_TOKEN@github.com/$org_name/$new_repo_name.git
-        cd ${{ github.workspace }}/$new_repo_name
-        git config --global user.email "svc@gamil.com"
-        git config --global user.name "svc"
-
-        if [[ $network_spoke_module == 'true' ]]; then
-          module_content=$(cat "${{ github.workspace }}/modules/network-spoke.tf")
-          cd ${{ github.workspace }}/$new_repo_name
-          echo "$module_content" >> main.tf
-        fi
-
-        if [[ $private_endpoint_module == 'true' ]]; then
-          module_content=$(cat "${{ github.workspace }}/modules/private-endpoint.tf")
-          cd ${{ github.workspace }}/$new_repo_name
-          echo "$module_content" >> main.tf
-        fi     
-
-        tfvars_count=$(yq eval '.new_repo_tfvars_file | length' ${{ github.workspace }}/parameters.yml)
-
-        if [[ $tfvars_count > 0 ]]; then
-          count=$tfvars_count
-          while [[ $count -gt 0 ]]; do
-            count=$((count-1))
-            file_name=$(yq eval '.new_repo_tfvars_file['$count']' ${{ github.workspace }}/parameters.yml)
-            cp ${{ github.workspace }}/tfvars/$file_name.tfvars ${{ github.workspace }}/$new_repo_name
-          done
-        fi
-
+        cd ${{ github.workspace }}/$workspace_repo_name
         git add .
-
-        if [[ $(git status --porcelain) ]]; then
-          git commit -m "Initial files added"
-          git push origin main
-          git checkout development
-          git commit -m "Initial files added"
-          git push origin development
-        fi
-        
-    - name: Configure Branch Protection
-      env:
-        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
-      run: |
-        # Enable branch protection for Main branch
-        curl -X PUT -H "Authorization: token $GH_TOKEN" \
-          "https://api.github.com/repos/$org_name/$new_repo_name/branches/main/protection" -d '{
-            "required_status_checks": null,
-            "enforce_admins": true,
-            "required_pull_request_reviews": {
-              "dismiss_stale_reviews": false,
-              "require_code_owner_reviews": false,
-              "required_approving_review_count": 1
-            },
-            "restrictions": null,
-            "bypass branch protections": false,
-            "required_linear_history": false,
-            "allow_force_pushes": false,
-            "allow_deletions": false
-          }'
-        
-        # Enable branch protection for Development branch
-        curl -X PUT -H "Authorization: token $GH_TOKEN" \
-          "https://api.github.com/repos/$org_name/$new_repo_name/branches/development/protection" -d '{
-            "required_status_checks": null,
-            "enforce_admins": true,
-            "required_pull_request_reviews": {
-              "dismiss_stale_reviews": false,
-              "require_code_owner_reviews": false,
-              "required_approving_review_count": 1
-            },
-            "restrictions": null,
-            "required_linear_history": false,
-            "bypass branch protections": false,
-            "allow_force_pushes": false,
-            "allow_deletions": false
-          }'
-      shell: bash
+        git commit -m "$tfc_workspace_name workspace added."
+        git push origin feat-$tfc_workspace_name-workspace
