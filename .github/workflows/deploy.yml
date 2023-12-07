@@ -226,7 +226,7 @@ jobs:
         updated_object=$(cat "${{ github.workspace }}/template-workspaces.tfvars")
         cd ${{ github.workspace }}/$workspace_repo_name
         
-        sed -i "/workspaces = \{/a \ \ \"$updated_object\"" workspaces.tfvars
+        sed -i "/workspaces = {/a \ \ \ \ $updated_object" workspaces.tfvars
         # echo "$updated_object" >> workspaces.tfvars
         # echo "}" >> workspaces.tfvars
         terraform fmt --recursive
