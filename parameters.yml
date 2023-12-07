@@ -1,11 +1,22 @@
-new_repo_name: demo-repo-02
-new_repo_description: for demo purpose 02
+new_repo_name: testing-repos
+new_repo_description: testing
 new_repo_tfvars_file: ["dev", "test"]
+# ========================================= #####
+# Workload Resources & Modules
+#
 network_spoke_module: true
 private_endpoint_module: true
-tfc_workspace_name: workspace-demo-repo
-tfc_workspace_tags: ["tag1"]
-tfc_workspace_var_set_name: Environment Variables 1
-tfc_workspace_project_name: Project-1
-tfc_new_projects: example1
-tfc_new_var_sets: New Variable Set 1
+private_storage_module: false
+# ========================================= #####
+# Terraform Cloud Settings
+#
+tfc_workspace_name: bootstrapping-repos
+tfc_workspace_tags: ["prod"]
+tfc_workspace_var_set_name: Environment Var
+tfc_workspace_project_name: demo-proj
+tfc_workspace_execution_mode: remote
+# ========================================= #####
+# Future Implemetation Features
+#
+# tfc_new_projects: ["example1", "example2"]
+# tfc_new_var_sets: ["New Variable Set 1", "New Variable Set 2"]

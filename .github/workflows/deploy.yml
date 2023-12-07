@@ -14,7 +14,7 @@ env:
   GH_TOKEN: ${{ secrets.GH_PAT }}
 
 jobs:
-  ingest_input:
+  ingest_inputs:
     name: "Ingest Inputs"
     runs-on: ubuntu-latest
     outputs:
@@ -22,6 +22,13 @@ jobs:
       new_repo_description: ${{ steps.ingest_inputs.outputs.new_repo_description }}
       new_repo_tfvars_file: ${{ steps.ingest_inputs.outputs.new_repo_tfvars_file }}
       network_spoke_module: ${{ steps.ingest_inputs.outputs.network_spoke_module }}
+      tfc_workspace_name: ${{ steps.ingest_inputs.outputs.tfc_workspace_name }}
+      tfc_workspace_tags: ${{ steps.ingest_inputs.outputs.tfc_workspace_tags }}
+      tfc_workspace_var_set_name: ${{ steps.ingest_inputs.outputs.tfc_workspace_var_set_name }}
+      tfc_workspace_project_name: ${{ steps.ingest_inputs.outputs.tfc_workspace_project_name }}
+      tfc_new_projects: ${{ steps.ingest_inputs.outputs.tfc_new_projects }}
+      tfc_new_var_sets: ${{ steps.ingest_inputs.outputs.tfc_new_var_sets }}
+      tfc_workspace_execution_mode: ${{ steps.ingest_inputs.outputs.tfc_workspace_execution_mode }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -183,7 +190,7 @@ jobs:
   #     shell: bash
 
   create_workspace:
-    needs: [ ingest_input ]
+    needs: [ ingest_inputs ]
     name: "Create New TFC Workspace"
     runs-on: ubuntu-latest
     env:
