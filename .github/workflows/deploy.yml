@@ -183,7 +183,7 @@ jobs:
   #     shell: bash
 
   create_workspace:
-    needs: [ ingest_inputs, create_repo ]
+    # needs: [ ingest_inputs, create_repo ]
     name: "Create New TFC Workspace"
     runs-on: ubuntu-latest
     env:
