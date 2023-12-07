@@ -237,10 +237,10 @@ jobs:
         cd ${{ github.workspace }}/$workspace_repo_name
 
         # Add new variable set name to unique_var_sets
-        sed -i "/unique_var_sets = \[/a \ \ \"$tfc_workspace_var_set_name\"," workspaces.tfvars
+        sed -i "/unique_var_sets = \[/a \ \ \"$tfc_new_var_sets\"," workspaces.tfvars
 
         # Add new project name to unique_projects
-        sed -i "/unique_projects = \[/a \ \ \"$tfc_workspace_project_name\"," workspaces.tfvars
+        sed -i "/unique_projects = \[/a \ \ \"$tfc_new_projects\"," workspaces.tfvars
 
         terraform fmt --recursive
       shell: bash
