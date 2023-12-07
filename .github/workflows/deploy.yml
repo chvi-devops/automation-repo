@@ -224,7 +224,6 @@ jobs:
         sed -i "s|sample_tags|$tfc_workspace_tags|g" ${{ github.workspace }}/template-workspaces.tfvars
 
         updated_object=$(cat "${{ github.workspace }}/template-workspaces.tfvars")
-        cat $updated_object
         cd ${{ github.workspace }}/$workspace_repo_name
         
         sed -i '$ s|}||' workspaces.tfvars
