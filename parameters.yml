@@ -1,5 +1,5 @@
-new_repo_name: testing-repos
-new_repo_description: testing
+new_repo_name: demo-repo-02
+new_repo_description: for demo purpose 02
 new_repo_tfvars_file: ["dev", "test"]
 # ========================================= #####
 # Workload Resources & Modules
@@ -20,3 +20,7 @@ tfc_workspace_execution_mode: remote
 #
 tfc_new_projects: example1
 tfc_new_var_sets: New Variable Set 1
+# ========================================= #####
+# Optional Terraform Resources
+#
+key_valut: 

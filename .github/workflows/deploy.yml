@@ -22,6 +22,7 @@ jobs:
       new_repo_description: ${{ steps.ingest_inputs.outputs.new_repo_description }}
       new_repo_tfvars_file: ${{ steps.ingest_inputs.outputs.new_repo_tfvars_file }}
       network_spoke_module: ${{ steps.ingest_inputs.outputs.network_spoke_module }}
+      key_vault: ${{ steps.ingest_inputs.outputs.key_vault }}
       tfc_workspace_name: ${{ steps.ingest_inputs.outputs.tfc_workspace_name }}
       tfc_workspace_tags: ${{ steps.ingest_inputs.outputs.tfc_workspace_tags }}
       tfc_workspace_var_set_name: ${{ steps.ingest_inputs.outputs.tfc_workspace_var_set_name }}
@@ -41,6 +42,49 @@ jobs:
           value="$(echo "$line" | cut -d ':' -f 2- | sed 's/^ *//g')"
           echo "$name=$value" >> "$GITHUB_OUTPUT"
           done < parameters.yml
+
+  configure_new_repo:
+    needs: [ ingest_inputs ]
+    name: "Configure New Repository"
+    runs-on: ubuntu-latest
+    env:
+      new_repo_name: ${{ needs.ingest_inputs.outputs.new_repo_name }}
+      new_repo_tfvars_file: ${{ needs.ingest_inputs.outputs.new_repo_tfvars_file }}
+      network_spoke_module: ${{ needs.ingest_inputs.outputs.network_spoke_module }}
+      private_endpoint_module: ${{ needs.ingest_inputs.outputs.private_endpoint_module }}
+      private_storage_module: ${{ needs.ingest_inputs.outputs.private_storage_module }}
+      key_vault: ${{ needs.ingest_inputs.outputs.key_vault }}
+    steps: 
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure repo
+      run: |
+        team_slug_name=$(echo "$team_name" | tr '[:upper:]' '[:lower:]')
+
+        git clone https://$GH_TOKEN@github.com/$org_name/$new_repo_name.git
+        cd ${{ github.workspace }}/$new_repo_name
+        git config --global user.email "demo user"
+        git config --global user.name "demouser@gmail.com"
+
+        if [[ $network_spoke_module == 'true' ]]; then
+          module_content=$(cat "${{ github.workspace }}/modules/network-spoke.tf")
+          cd ${{ github.workspace }}/$new_repo_name
+          echo "$module_content" >> main.tf
+        fi
+
+        if [[ $key_vault == 'true' ]]; then
+          tf_resource_content=$(cat "${{ github.workspace }}/terraform_resources/key-vault.tf")
+          cd ${{ github.workspace }}/$new_repo_name
+          echo "$tf_resource_content" >> main.tf
+        fi
+
+        git add .
+
+        if [[ $(git status --porcelain) ]]; then
+          git commit -m "Initial files added"
+          git push origin main
+        fi
 
   # create_repo:
   #   needs: ingest_input
@@ -189,67 +233,67 @@ jobs:
   #         }'
   #     shell: bash
 
-  create_workspace:
-    needs: [ ingest_inputs ]
-    name: "Create New TFC Workspace"
-    runs-on: ubuntu-latest
-    env:
-      tfc_workspace_name: ${{ needs.ingest_inputs.outputs.tfc_workspace_name }}
-      tfc_workspace_tags: ${{ needs.ingest_inputs.outputs.tfc_workspace_tags }}
-      tfc_workspace_execution_mode: ${{ needs.ingest_inputs.outputs.tfc_workspace_execution_mode }}
-      tfc_workspace_var_set_name: ${{ needs.ingest_inputs.outputs.tfc_workspace_var_set_name }}
-      tfc_workspace_project_name: ${{ needs.ingest_inputs.outputs.tfc_workspace_project_name }}
-      tfc_new_projects: ${{ needs.ingest_inputs.outputs.tfc_new_projects }}
-      tfc_new_var_sets: ${{ needs.ingest_inputs.outputs.tfc_new_var_sets }}
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+  # create_workspace:
+  #   needs: [ ingest_inputs ]
+  #   name: "Create New TFC Workspace"
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     tfc_workspace_name: ${{ needs.ingest_inputs.outputs.tfc_workspace_name }}
+  #     tfc_workspace_tags: ${{ needs.ingest_inputs.outputs.tfc_workspace_tags }}
+  #     tfc_workspace_execution_mode: ${{ needs.ingest_inputs.outputs.tfc_workspace_execution_mode }}
+  #     tfc_workspace_var_set_name: ${{ needs.ingest_inputs.outputs.tfc_workspace_var_set_name }}
+  #     tfc_workspace_project_name: ${{ needs.ingest_inputs.outputs.tfc_workspace_project_name }}
+  #     tfc_new_projects: ${{ needs.ingest_inputs.outputs.tfc_new_projects }}
+  #     tfc_new_var_sets: ${{ needs.ingest_inputs.outputs.tfc_new_var_sets }}
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v3
 
-    - name: Clone the worskspace repo
-      run: |
-        git clone https://$GH_TOKEN@github.com/$org_name/$workspace_repo_name.git
-        cd ${{ github.workspace }}/$workspace_repo_name
-        git config --global user.email "svc@gmail.com"
-        git config --global user.name "svc"
-        git checkout development
-        git branch feat-$tfc_workspace_name-workspace
-        git checkout feat-$tfc_workspace_name-workspace
+  #   - name: Clone the worskspace repo
+  #     run: |
+  #       git clone https://$GH_TOKEN@github.com/$org_name/$workspace_repo_name.git
+  #       cd ${{ github.workspace }}/$workspace_repo_name
+  #       git config --global user.email "svc@gmail.com"
+  #       git config --global user.name "svc"
+  #       git checkout development
+  #       git branch feat-$tfc_workspace_name-workspace
+  #       git checkout feat-$tfc_workspace_name-workspace
       
-    - name: Manipulate and Update Workspace Object
-      run: |
-        sed -i "s|sample_workspace|$tfc_workspace_name|g" ${{ github.workspace }}/template-workspaces.tfvars
-        sed -i "s|sample_variable_set|$tfc_workspace_var_set_name|g" ${{ github.workspace }}/template-workspaces.tfvars
-        sed -i "s|sample_execution_mode|$tfc_workspace_execution_mode|g" ${{ github.workspace }}/template-workspaces.tfvars
-        sed -i "s|sample_project_name|$tfc_workspace_project_name|g" ${{ github.workspace }}/template-workspaces.tfvars
-        sed -i "s|sample_tags|$tfc_workspace_tags|g" ${{ github.workspace }}/template-workspaces.tfvars
+  #   - name: Manipulate and Update Workspace Object
+  #     run: |
+  #       sed -i "s|sample_workspace|$tfc_workspace_name|g" ${{ github.workspace }}/template-workspaces.tfvars
+  #       sed -i "s|sample_variable_set|$tfc_workspace_var_set_name|g" ${{ github.workspace }}/template-workspaces.tfvars
+  #       sed -i "s|sample_execution_mode|$tfc_workspace_execution_mode|g" ${{ github.workspace }}/template-workspaces.tfvars
+  #       sed -i "s|sample_project_name|$tfc_workspace_project_name|g" ${{ github.workspace }}/template-workspaces.tfvars
+  #       sed -i "s|sample_tags|$tfc_workspace_tags|g" ${{ github.workspace }}/template-workspaces.tfvars
 
-        updated_object=$(cat "${{ github.workspace }}/template-workspaces.tfvars")
-        cd ${{ github.workspace }}/$workspace_repo_name
+  #       updated_object=$(cat "${{ github.workspace }}/template-workspaces.tfvars")
+  #       cd ${{ github.workspace }}/$workspace_repo_name
         
-        sed -i "/workspaces = {/a \ \ \ \ $updated_object" workspaces.tfvars
-        # echo "$updated_object" >> workspaces.tfvars
-        # echo "}" >> workspaces.tfvars
-        terraform fmt --recursive
-      shell: bash
+  #       sed -i '$ s|}||' workspaces.tfvars
+  #       echo "$updated_object" >> workspaces.tfvars
+  #       echo "}" >> workspaces.tfvars
+  #       terraform fmt --recursive
+  #     shell: bash
 
-    - name: Update workspace.tfvars with new entries
-      run: |
-        cd ${{ github.workspace }}/$workspace_repo_name
+  #   - name: Update workspace.tfvars with new entries
+  #     run: |
+  #       cd ${{ github.workspace }}/$workspace_repo_name
 
-        # Add new variable set name to unique_var_sets
-        sed -i "/unique_var_sets = \[/a \ \ \"$tfc_new_var_sets\"," workspaces.tfvars
+  #       # Add new variable set name to unique_var_sets
+  #       sed -i "/unique_var_sets = \[/a \ \ \"$tfc_new_var_sets\"," workspaces.tfvars
 
-        # Add new project name to unique_projects
-        sed -i "/unique_projects = \[/a \ \ \"$tfc_new_projects\"," workspaces.tfvars
+  #       # Add new project name to unique_projects
+  #       sed -i "/unique_projects = \[/a \ \ \"$tfc_new_projects\"," workspaces.tfvars
 
-        terraform fmt --recursive
-      shell: bash
+  #       terraform fmt --recursive
+  #     shell: bash
     
-    - name:  Create pull request from feature branch to development branch
-      run: |
-        team_slug_name=$(echo "$team_name" | tr '[:upper:]' '[:lower:]')
+  #   - name:  Create pull request from feature branch to development branch
+  #     run: |
+  #       team_slug_name=$(echo "$team_name" | tr '[:upper:]' '[:lower:]')
 
-        cd ${{ github.workspace }}/$workspace_repo_name
-        git add .
-        git commit -m "$tfc_workspace_name workspace added."
-        git push origin feat-$tfc_workspace_name-workspace
+  #       cd ${{ github.workspace }}/$workspace_repo_name
+  #       git add .
+  #       git commit -m "$tfc_workspace_name workspace added."
+  #       git push origin feat-$tfc_workspace_name-workspace
