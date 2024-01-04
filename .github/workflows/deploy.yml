@@ -22,7 +22,7 @@ jobs:
       new_repo_description: ${{ steps.ingest_inputs.outputs.new_repo_description }}
       new_repo_tfvars_file: ${{ steps.ingest_inputs.outputs.new_repo_tfvars_file }}
       network_spoke_module: ${{ steps.ingest_inputs.outputs.network_spoke_module }}
-      key_vault: ${{ steps.ingest_inputs.outputs.key_vault }}
+      terraform_resources: ${{ steps.ingest_inputs.outputs.terraform_resources }}
       tfc_workspace_name: ${{ steps.ingest_inputs.outputs.tfc_workspace_name }}
       tfc_workspace_tags: ${{ steps.ingest_inputs.outputs.tfc_workspace_tags }}
       tfc_workspace_var_set_name: ${{ steps.ingest_inputs.outputs.tfc_workspace_var_set_name }}
@@ -53,7 +53,6 @@ jobs:
       network_spoke_module: ${{ needs.ingest_inputs.outputs.network_spoke_module }}
       private_endpoint_module: ${{ needs.ingest_inputs.outputs.private_endpoint_module }}
       private_storage_module: ${{ needs.ingest_inputs.outputs.private_storage_module }}
-      key_vault: ${{ needs.ingest_inputs.outputs.key_vault }}
     steps: 
     - name: Checkout code
       uses: actions/checkout@v3
@@ -73,10 +72,17 @@ jobs:
           echo "$module_content" >> main.tf
         fi
 
-        if [[ $key_vault == 'true' ]]; then
-          tf_resource_content=$(cat "${{ github.workspace }}/terraform_resources/key-vault.tf")
+        tf_resources_count=$(yq eval '.terraform_resources | length' ${{ github.workspace }}/parameters.yml)
+
+        if [[ $tf_resources_count > 0 ]]; then
+          count=$tf_resources_count
           cd ${{ github.workspace }}/$new_repo_name
-          echo "$tf_resource_content" >> main.tf
+          while [[ $count -gt 0 ]]; do
+            count=$((count-1))
+            tf_resource_name=$(yq eval '.terraform_resources['$count']' ${{ github.workspace }}/parameters.yml)
+            tf_resource_content=$(cat "${{ github.workspace }}/terraform_resources/$tf_resource_name.tf")
+            echo "$tf_resource_content" >> main.tf
+          done
         fi
 
         git add .

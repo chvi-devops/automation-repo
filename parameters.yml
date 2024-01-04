@@ -21,6 +21,7 @@ tfc_workspace_execution_mode: remote
 tfc_new_projects: example1
 tfc_new_var_sets: New Variable Set 1
 # ========================================= #####
-# Optional Terraform Resources
-#
-key_valut: 
+# Terraform Resources 
+# **If any terraform resouce needed then select it from the avaible resources otherwise keep blank**
+# Available Terraform Resources are: 'key-vault'
+terraform_resources: ["key-vault"]
