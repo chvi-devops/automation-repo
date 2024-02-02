@@ -2,14 +2,16 @@ name: Create and Configure GitHub Repo
 
 on:
   workflow_dispatch:
-    selectedOption:
-      required: true
-      description: Select Environment
-      options:
-        - 'dev'
-        - 'qa'
-        - 'stg'
-        - 'prod'
+    inputs:
+      environment:
+        required: true
+        type: choice
+        description: Select Environment
+        options:
+          - 'dev'
+          - 'qa'
+          - 'stg'
+          - 'prod'
 
 env:
   org_name: chvi-devops
