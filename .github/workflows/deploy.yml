@@ -2,11 +2,11 @@ name: Create and Configure GitHub Repo
 
 on:
   workflow_dispatch:
-  inputs:
-    environment:
-      description: 'Environment to run tests against'
-      type: environment
-      required: true
+    inputs:
+      environment:
+        description: 'Environment to run tests against'
+        type: environment
+        required: true
 
 env:
   org_name: chvi-devops
