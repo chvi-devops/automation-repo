@@ -5,13 +5,9 @@ on:
     inputs:
       environment:
         required: true
-        type: choice
         description: Select Environment
-        options:
-          - 'dev'
-          - 'qa'
-          - 'stg'
-          - 'prod'
+        type: environment
+        
 
 env:
   org_name: chvi-devops
